@@ -1,10 +1,12 @@
 package Base.Chat 
 {
+	import Base.ActionHandler;
+	import Base.Etc.Util;
 	/**
 	 * ...
 	 * @author 
 	 */
-	public class Dialogue 
+	public class Dialogue extends ActionHandler
 	{
 		public var states:Vector.<State> = new Vector.<State>();
 		
@@ -19,7 +21,17 @@ package Base.Chat
 		
 		public function Dialogue() 
 		{
-			
+			setAction(".*", parseCommand);
+		}
+		
+		public function parseCommand(cmd:String, match:Array):void {
+			if (!Util.isNumber(cmd)) {
+				engine.printLine("What?");
+			}
+			else {
+				var str:String = nextState(int(cmd));
+				engine.printLine(str);
+			}
 		}
 		
 		public function startDialogue():String {
