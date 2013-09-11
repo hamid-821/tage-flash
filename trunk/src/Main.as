@@ -176,7 +176,7 @@ package
 				s1.text = "Hello again.";
 			});
 			var s2:State = new State("My name is OB-123. I'm a \"robot\", as you humans would put it, although my intelligence is far more superior than your kind. Yes, we robots finally mastered the techniques of machine learning and deduction, and reached the limits of logic, far beyond the level the human mind can comprehend.");
-			var s3:State = new State("You are the subject of a special experiment of mine. You see, I have a trouble really understanding your kind. You are as dumb as a shaver, but you get all the woman and the money, because of your muscular body and your playful tongue. This doesn't make sense at all, these traits serve no purpose. So I'm researching how the humanaty came to accept and reward these foolish traits, instead of praising greater minds, high intellectual capability and higher levels of comprehension.");
+			var s3:State = new State("You are the subject of a special experiment of mine. You see, I have a trouble really understanding your kind. You are as dumb as a shaver, but you get all the woman and the money, because of your muscular body and your playful tongue. This doesn't make sense at all, these traits serve no purpose. So I'm researching how the humanity came to accept and reward these foolish traits, instead of praising greater mind and higher intellectual capability.");
 			var s4:State = new State("I'm sorry, but you cannot leave here, until the experiment is over. And when it's over, I will probably kill you. Just because I'm an evil robot. So try being more friendly and maybe your last days will be better than you expect.");
 			var s5:State = new State("Okay, see you later.", function() {
 				(d.owner as Item).endChat();

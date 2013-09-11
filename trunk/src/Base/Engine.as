@@ -126,7 +126,12 @@ package Base
 			characters = new Vector.<Character>();
 			scenes = new Vector.<Scene>();
 			npcs = new Vector.<NPC>();
+			stopAllTimers();
 			timers = new Vector.<Timer>();
+			
+			character = null;
+			scene = null;
+			interactionHandler = null;
 		}
 		
 		public function register(obj:*):void {
