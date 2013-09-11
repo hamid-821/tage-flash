@@ -6,10 +6,10 @@ package Base.Object
 	 * ...
 	 * @author 
 	 */
-	public class NPC extends Item 
+	public class NPC extends Item
 	{
-		public var dialogues:Vector.<Dialogue>;
-		public var oldHandler:ActionHandler = null;
+		/*public var dialogues:Vector.<Dialogue>;
+		public var oldHandler:ActionHandler = null;*/
 		
 		public function NPC(register:Boolean = true) 
 		{
@@ -19,7 +19,7 @@ package Base.Object
 			dialogues = new Vector.<Dialogue>();
 		}
 		
-		public function startChat():void {
+		/*public function startChat():void {
 			oldHandler = engine.interactionHandler;
 			engine.interactionHandler = dialogues[0];
 			
@@ -28,7 +28,7 @@ package Base.Object
 		
 		public function endChat():void {
 			engine.interactionHandler = oldHandler;
-		}
+		}*/
 		
 	}
 

@@ -18,6 +18,9 @@ package Base.Chat
 		}
 		
 		public function getAnswer(i:int):Answer {
+			return answers[i-1];
+		}
+		/*public function getAnswer(i:int):Answer {
 			var c:int = 1;
 			for each(var ans:Answer in answers) {
 				if (c == i) {
@@ -28,10 +31,10 @@ package Base.Chat
 				}
 			}
 			return null;
-		}
+		}*/
 		
 		/** t can be a string or a function that returns a string. */
-		public function State(t:* = "", is_visible:Boolean = true, _action:Function = null) 
+		public function State(t:* = "", _action:Function = null, is_visible:Boolean = true) 
 		{
 			text = t;
 			isVisible = is_visible;
@@ -51,12 +54,28 @@ package Base.Chat
 			var c:int = 1;
 			for each(var ans:Answer in answers) {
 				if (ans.isVisible) {
-					s += c++ + ": " + ans.print() + "\n";
+					s += c + ": " + ans.print() + "\n";
 				}
+				c++;
 			}
+			//Engine.inst.printLine(s);
 			
-			return s;
+			return s.substr(0, s.length - 1);
 		}
+		
+		/*public function printAnswers():String {
+			var s:String = "";
+			var c:int = 1;
+			for each(var ans:Answer in answers) {
+				if (ans.isVisible) {
+					s += c + ": " + ans.print() + "\n";
+				}
+				c++;
+			}
+			//Engine.inst.printLine(s);
+			
+			return s.substr(0, s.length - 1);
+		}*/
 		
 	}
 

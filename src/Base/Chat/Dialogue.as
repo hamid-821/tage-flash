@@ -29,15 +29,17 @@ package Base.Chat
 				engine.printLine("What?");
 			}
 			else {
-				var str:String = nextState(int(cmd));
-				engine.printLine(str);
+				nextState(int(cmd));
+				//var str:String = nextState(int(cmd));
+				//engine.printLine(str);
 			}
 		}
 		
-		public function startDialogue():String {
+		public function startDialogue():void {
 			currentState = states[0];
 			isActive = true;
-			return currentState.print();
+			engine.printLine(currentState.print());
+			currentState.action();
 		}
 		
 		public function endDialogue():void {
@@ -45,6 +47,8 @@ package Base.Chat
 		}
 		
 		public function nextState(answerIndex:int):String {
+			var oldState:State = currentState;
+			
 			if (currentState == null) {
 				trace("ERROR: Dialogue: nextState: currentState is null");
 			} else {
@@ -53,12 +57,13 @@ package Base.Chat
 					ans.action();
 					currentState = ans.nextState;
 					if (currentState != null) {
+						engine.printLine(currentState.print());
 						currentState.action();
-						return currentState.print();
 					}
 				}
 			}
-			return "ERROR: Dialogue: nextState";
+			return "";
+			trace("ERROR: Dialogue: nextState");
 		}
 		
 	}

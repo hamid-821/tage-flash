@@ -5,6 +5,7 @@ package Base
 	import Base.Object.Item;
 	import Base.Object.NPC;
 	import Base.Object.Scene;
+	import flash.utils.Timer;
 	/**
 	 * ...
 	 * @author 
@@ -17,6 +18,7 @@ package Base
 		public var characters:Vector.<Character>;
 		public var scenes:Vector.<Scene>;
 		public var npcs:Vector.<NPC>;
+		public var timers:Vector.<Timer>;
 		
 		/* variables related to current game state */
 		public var character:Character;
@@ -103,11 +105,28 @@ package Base
 			return null;
 		}
 		
+		public function addTimer(t:Timer):void {
+			timers.push(t);
+		}
+		public function removeTimer(t:Timer):void {
+			Util.remove(timers, t);
+		}
+		public function stopAllTimers():void {
+			for each(var t:Timer in timers) {
+				try {
+					t.stop();
+				} catch (e:*) {
+					
+				}
+			}
+		}
+		
 		public function init():void {
 			items = new Vector.<Item>();
 			characters = new Vector.<Character>();
 			scenes = new Vector.<Scene>();
 			npcs = new Vector.<NPC>();
+			timers = new Vector.<Timer>();
 		}
 		
 		public function register(obj:*):void {

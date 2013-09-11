@@ -15,13 +15,13 @@ package Base.Chat
 		public var parentState:State = null;
 		
 		/** t can be a string or a function that returns a string. */
-		public function Answer(t:* = "", _parentState:State = null, _nextState:State = null, _isVisible:Boolean = true, _action:Function = null) 
+		public function Answer(t:* = "", /*_parentState:State = null,*/ _nextState:State = null, _action:Function = null, _isVisible:Boolean = true) 
 		{
 			text = t;
 			isVisible = _isVisible;
 			action = _action;
 			nextState = _nextState;
-			parentState = _parentState;
+			//parentState = _parentState;
 			
 			if (parentState != null) {
 				parentState.addAnswer(this);

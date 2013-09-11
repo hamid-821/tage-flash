@@ -100,7 +100,10 @@ package Base.Object
 			var obj:Item = this.findItem(objname);
 			
 			if (obj.isVisible && obj != null) {
-				if (!obj.isPickedUp) {
+				if (!obj.isPickable) {
+					engine.printLine("I can't pick that up.");
+				}
+				else if (!obj.isPickedUp) {
 					engine.printLine("Picked up the " + obj.name + ".");
 					character.addInventory(obj);
 				} else {
@@ -170,7 +173,13 @@ package Base.Object
 		}
 		
 		private function actionTalk(command:String, match:Array):void {
-			var npcName:String = match[5].substr(1, int.MAX_VALUE);
+			var npcName:String;
+			
+			try {
+				npcName = match[5].substr(1, int.MAX_VALUE);
+			} catch (e:*) {
+				npcName = "";
+			}
 			
 			if (command == "talk" || command == "speak") {
 				engine.printLine("Bla bla bla.");
