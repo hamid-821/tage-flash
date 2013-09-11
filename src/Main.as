@@ -44,11 +44,13 @@ package
 			scene.addItem(table);
 			
 			var pencil:Item = new Item();
+			pencil.isPickable = true;
 			pencil.addAlias("a pencil", "a pen");
 			pencil.shortDescription = "It's a pencil. Hmm.";
 			table.addItem(pencil);
 			
 			var note:Item = new Item();
+			note.isPickable = true;
 			note.addAlias("note", "notes", "paper");
 			note.shortDescription = "It's a note. Maybe it has some clues on why I am here and what is going on.";
 			table.addItem(note);
@@ -89,6 +91,7 @@ package
 			});
 			
 			var clothes:Item = new Item();
+			clothes.isPickable = true;
 			clothes.addAlias("cloth", "clothes");
 			clothes.shortDescription = "They are my clothes! No wonder why I was naked before.";
 			scene.setAction1(clothes, "(use|put on|wear)", function() {
@@ -203,7 +206,6 @@ package
 			s4.addAnswer(a1, a2, a3, a4);
 			
 			telephone.setDialogue(d);
-			telephone.isPickable = false;
 			table.addItem(telephone);
 			telephone.startTimer(7000, function() {
 				engine.printLine("*Brrrrrr! (A phone rings)*");
@@ -213,7 +215,7 @@ package
 			//	s2, s4);
 			
 			
-			scene.setAction1(telephone, "(pick up|answer|use)", function() {
+			scene.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
 				telephone.stopTimer();
 				telephone.startChat();
 			});

@@ -21,7 +21,7 @@ package Base.Object
 		public var customDescription:String = "";
 		
 		public var isVisible:Boolean;
-		public var isPickable:Boolean;
+		public var isPickable:Boolean = false;
 		public var isPickedUp:Boolean;
 		//public var isSeen:Boolean = false; // whether the object is seen or not
 		public var overridePickup:Boolean = false; // would you like to override the default "pickup" behaviour of the engine, or not
@@ -204,7 +204,7 @@ package Base.Object
 			shortDescription = "";
 			customDescription = "";
 			isVisible = true;
-			isPickable = true;
+			isPickable = false;
 			isPickedUp = false;
 			//isSeen = false;
 			prop = new HashMap();
