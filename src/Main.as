@@ -115,7 +115,8 @@ package
 			scene.setAction1(door, "(enter|use)", function() {
 				if (door.getProp("open") == false) {
 					engine.printLine("It's closed.");
-				} else {
+				} 
+				else {
 					engine.printLine("Wohoo, I'm free!");
 					engine.printLine(SEPARATOR);
 					engine.printLine("Thanks for playing the demo level. Hope you enjoyed it, and hope you enjoy the game engine!");
