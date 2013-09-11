@@ -46,7 +46,6 @@ package Base.Object
 			neighborScenes = new Vector.<Scene>();
 		}
 		
-		
 		public function findItem(alias:String):Item {
 			for each(var i:Item in items) {
 				if (i.hasAlias(alias)) {
@@ -98,6 +97,8 @@ package Base.Object
 			var objname:String = match[2].substr(1, int.MAX_VALUE);
 			
 			var obj:Item = this.findItem(objname);
+			
+			if (obj.overridePickup) return;
 			
 			if (obj.isVisible && obj != null) {
 				if (!obj.isPickable) {
@@ -169,7 +170,7 @@ package Base.Object
 		
 		
 		private function actionHelp(command:String, match:Array):void {
-			engine.printLine("commands:\n\"help\": brings up this text.\n\"describe\": gives a description of your environment.\n\"describe [object_name]\": describes the specified object.\n\"inventory\": lists your inventory.\n\"take/pick up/grab [object_name]\": picks up the specified object.\n\"talk to [npc_name]\": starts talking to the npc.\n\"options\": shows the possible dialogue choices during dialogues with NPCs.");
+			engine.printLine("commands:\n\"help\": brings up this text.\n\"describe\": gives a description of your environment.\n\"describe [object_name]\": describes the specified object.\n\"inventory\": lists your inventory.\n\"take/pick up/grab [object_name]\": picks up the specified object.\n\"talk to [npc_name]\": starts talking to the npc.\n\"options\": shows the possible dialogue choices during dialogues with NPCs.\nThere are also other commands, which you can find out by guessing. They are mostly simple, so don't try too complicated stuff.");
 		}
 		
 		private function actionTalk(command:String, match:Array):void {

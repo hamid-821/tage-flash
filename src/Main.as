@@ -171,6 +171,7 @@ package
 			telephone.shortDescription = "It's a telephone.";
 			telephone.customDescription = "It's ringing.";
 			telephone.setProp("ringing", true);
+			telephone.overridePickup = true;
 			
 			var d:Dialogue = new Dialogue();
 			var s1:State = new State("Hello my friend. Glad that you finally answered my call.", function() {
@@ -212,7 +213,7 @@ package
 			//	s2, s4);
 			
 			
-			scene.setAction1(telephone, "(answer|use)", function() {
+			scene.setAction1(telephone, "(pick up|answer|use)", function() {
 				telephone.stopTimer();
 				telephone.startChat();
 			});

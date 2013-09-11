@@ -23,6 +23,8 @@ package Base.Object
 		public var isVisible:Boolean;
 		public var isPickable:Boolean;
 		public var isPickedUp:Boolean;
+		//public var isSeen:Boolean = false; // whether the object is seen or not
+		public var overridePickup:Boolean = false; // would you like to override the default "pickup" behaviour of the engine, or not
 		public var prop:HashMap; // custom properties
 		public var count:int;
 		public var dialogue:Dialogue;
@@ -204,10 +206,12 @@ package Base.Object
 			isVisible = true;
 			isPickable = true;
 			isPickedUp = false;
+			//isSeen = false;
 			prop = new HashMap();
 			count = 1;
 			dialogues = new Vector.<Dialogue>();
 			dialogue = null;
+			overridePickup = false;
 		}
 		
 	}
