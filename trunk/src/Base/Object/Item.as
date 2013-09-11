@@ -1,10 +1,13 @@
 package Base.Object 
 {
 	import Base.ActionHandler;
+	import Base.Chat.Dialogue;
 	import Base.Engine;
 	import Base.Etc.HashMap;
 	import Base.Etc.Util;
+	import flash.events.TimerEvent;
 	import flash.utils.Dictionary;
+	import flash.utils.Timer;
 	/**
 	 * ...
 	 * @author 
@@ -22,7 +25,14 @@ package Base.Object
 		public var isPickedUp:Boolean;
 		public var prop:HashMap; // custom properties
 		public var count:int;
+		public var dialogue:Dialogue;
 		
+		private var lifetime:int; //in milliseconds
+		private var lifetimeFunc:Function;
+		private var timer:Timer;
+		
+		public var dialogues:Vector.<Dialogue>;
+		public var oldHandler:ActionHandler = null;
 		
 		public function Item(register:Boolean = true) 
 		{
@@ -33,6 +43,44 @@ package Base.Object
 			}
 			
 			init();
+		}
+		
+		public function setDialogue(d:Dialogue):void {
+			this.dialogue = d;
+			d.owner = this;
+		}
+		
+		public function startChat():void {
+			oldHandler = engine.interactionHandler;
+			engine.interactionHandler = dialogue;
+			
+			dialogue.startDialogue();
+		}
+		
+		public function endChat():void {
+			engine.interactionHandler = oldHandler;
+		}
+		
+		/** count = 0 means infinity */
+		public function startTimer(lifetime:int, func:Function, count:int):void {
+			try {
+				timer.stop();
+			} catch (e:*) {
+				
+			}
+			engine.removeTimer(timer);
+			timer = new Timer(lifetime, count);
+			timer.addEventListener(TimerEvent.TIMER, func);
+			timer.start();
+			engine.addTimer(timer);
+		}
+		
+		public function stopTimer():void {
+			try {
+				timer.stop();
+			} catch (e:*) {
+				
+			}
 		}
 		
 		public function get fullDescription():String {
@@ -158,6 +206,8 @@ package Base.Object
 			isPickedUp = false;
 			prop = new HashMap();
 			count = 1;
+			dialogues = new Vector.<Dialogue>();
+			dialogue = null;
 		}
 		
 	}
