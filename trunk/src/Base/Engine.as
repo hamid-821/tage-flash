@@ -29,6 +29,80 @@ package Base
 			init();
 		}
 		
+		public function printLine(string:String):void {
+			dispatchEvent(new OutputMessageEvent(string+"\n"));
+		}
+		
+		public function print(string:String):void {
+			dispatchEvent(new OutputMessageEvent(string));
+		}
+		
+		public function setState(scene:Scene, character:Character, interactionHandler:ActionHandler):void {
+			this.scene = scene;
+			this.character = character;
+			this.interactionHandler = interactionHandler;
+		}
+		
+		public function parseCommand(command:String):void {
+			interactionHandler.parse(command);
+		}
+		
+		public function addItem(...Items):void {
+			for each(var item:Item in Items) {
+				items.push(item);
+			}
+		}
+		public function removeItem(item:Item):void {
+			Util.remove(items, item);
+		}
+		
+		public function addCharacter(...Characters):void {
+			for each(var item:Character in Characters) {
+				characters.push(item);
+			}
+		}
+		public function removeCharacter(character:Character):void {
+			Util.remove(characters, character);
+		}
+		
+		public function addNPC(...Npcs):void {
+			for each(var item:NPC in Npcs) {
+				npcs.push(item);
+			}
+		}
+		
+		public function removeNPC(npc:NPC):void {
+			Util.remove(npcs, npc);
+		}
+		
+		public function addScene(...Scenes):void {
+			for each(var item:Scene in Scenes) {
+				scenes.push(item);
+			}
+		}
+		
+		public function removeScene(scene:Scene):void {
+			Util.remove(scenes, scene);
+		}
+		
+		public function findItem(alias:String):Item {
+			for each(var i:Item in items) {
+				if (i.hasAlias(alias)) {
+					return i;
+				}
+			}
+			return null;
+		}
+		
+		public function findNPC(alias:String):NPC {
+			for each(var i:NPC in npcs) {
+				if (i.hasAlias(alias)) {
+					return i;
+				}
+			}
+			return null;
+		}
+		
 		public function init():void {
 			items = new Vector.<Item>();
 			characters = new Vector.<Character>();

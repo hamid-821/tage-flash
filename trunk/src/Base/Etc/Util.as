@@ -1,5 +1,6 @@
 package Base.Etc 
 {
+	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getDefinitionByName;
 	/**
@@ -14,15 +15,16 @@ package Base.Etc
 			
 		}
 		
-		public static function remove(vec:*, ob:*):void {
+		public static function remove(vec:*, ob:*):Boolean {
 			var i:int = 0;
 			for each(var o:* in vec) {
 				if (o == ob) {
 					vec.splice(i, 1);
-					return;
+					return true;
 				}
 				i++;
 			}
+			return false;
 		}
 		
 		public static function has(vec:*, ob:*):Boolean {
@@ -51,7 +53,7 @@ package Base.Etc
 			command = command.toLowerCase();
 			command = deleteDoubleSpaces(command);
 			command = trimBeginEndSpace(command);
-			command = removeThe(command);
+			command = removeArticles(command);
 			
 			/*while (command.indexOf(" the ") != -1) {
 				command = command.replace(" the ", " ");
@@ -60,8 +62,8 @@ package Base.Etc
 			return command;
 		}
 
-		public static function removeThe(str:String):String {
-			return str.replace(/ the /g, " ");
+		public static function removeArticles(str:String):String {
+			return str.replace(/ (the|a|an) /g, " ");
 		}
 		public static function deleteDoubleSpaces(str:String):String {
 			return str.replace(/ +/g, " ");
@@ -74,6 +76,13 @@ package Base.Etc
 				}
 			}
 			return str;*/
+		}
+		
+		public static function replaceAll(str:String, pat:String, rep:String):String {
+			while (str.indexOf(pat) != -1) {
+				str = str.replace(pat, rep);
+			}
+			return str;
 		}
 		public static function trimBeginEndSpace(str:String):String {
 			return str.replace(/\s*([^\s].*[^\s])\s*/g, "$1");

@@ -2,20 +2,24 @@ package Base
 {
 	import Base.Etc.HashMap;
 	import Base.Etc.Util;
+	import flash.events.EventDispatcher;
 	/**
 	 * ...
 	 * @author 
 	 */
-	public class ActionHandler 
+	public class ActionHandler extends EventDispatcher
 	{
 		public var actions:HashMap;
+		public var owner:*;
+		public var engine:Engine;
 		
 		public function ActionHandler() 
 		{
-			init();
+			initActionHandler();
 		}
 		
-		public function init():void {
+		public function initActionHandler():void {
+			engine = Engine.inst;
 			actions = new HashMap();
 		}
 		
@@ -38,6 +42,7 @@ package Base
 				}
 			}
 			if (!flag) {
+				engine.printLine("I can't do that.");
 				trace("ERROR: ActionHandler: parse");
 			}
 		}
