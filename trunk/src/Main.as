@@ -34,9 +34,9 @@ package
 			
 			
 			var scene:Scene = new Scene();
-			scene.name = "room";
-			scene.descriptionShort = "I'm in a small room.";
-			scene.descriptionLong = "I'm in a small room. I don't remember how I ended up here.";
+			scene.addAlias("main room", "room");
+			scene.descriptionShort = "I'm in a room.";
+			scene.descriptionLong = "I'm in a room. I don't remember how I ended up here.";
 			
 			var table:Item = new Item();
 			table.addAlias("table");
@@ -69,7 +69,7 @@ package
 					engine.printLine("It's already closed.");
 				} else {
 					cupboard.setProp("open", false);
-					cupboard.customDescription = "";
+					cupboard.additionalDescription = "";
 					engine.printLine("Closed the cupboard.");
 					for each(var i:Item in cupboard.items) {
 						i.isVisible = false;
@@ -81,7 +81,7 @@ package
 					engine.printLine("It's already open.");
 				} else {
 					cupboard.setProp("open", true);
-					cupboard.customDescription = "It's open.";
+					cupboard.additionalDescription = "It's open.";
 					engine.printLine("Opened the cupboard.");
 					for each(var i:Item in cupboard.items) {
 						i.isVisible = true;
@@ -110,7 +110,7 @@ package
 			var door:Item = new Item();
 			door.addAlias("door");
 			door.shortDescription = "It's a door.";
-			door.customDescription = "It seems like it's locked.";
+			door.additionalDescription = "It seems like it's locked.";
 			door.setProp("open", false);
 			door.setProp("locked", true);
 			scene.addItem(door);
@@ -139,7 +139,7 @@ package
 				else {
 					engine.printLine("Opened the door.");
 					door.setProp("open", true);
-					door.customDescription = "It's open.";
+					door.additionalDescription = "It's open.";
 				}
 			});
 			
@@ -147,7 +147,7 @@ package
 				if (door.getProp("open") == true) {
 					door.setProp("open", false);
 					engine.printLine("Closed the door.");
-					door.customDescription = "";
+					door.additionalDescription = "";
 				} else {
 					engine.printLine("It's already closed.");
 				}
@@ -163,21 +163,47 @@ package
 				else {
 					door.setProp("locked", false);
 					engine.printLine("Tadaa! The door is unlocked!");
-					door.customDescription = "";
+					door.additionalDescription = "";
+					
+					var scene2:Scene = new Scene();
+					scene2.descriptionShort = "I'm in a garden full of people.";
+					scene2.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
+					
+					//scene.addNeighborScene(scene2);
+					
+					engine.setState(scene2, character, scene2);
+					//engine.stopAllTimers(scene);
 				}
 			};
 			scene.setAction2(openDoorFunc, "(unlock) $1 with $2", door, pencil);
-			//scene.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
+			scene.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
 				
+			var scene3:Scene = new Scene();
+			scene3.addAlias("small room", "room", "little room");
+			scene3.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
+			scene3.descriptionShort = "This is a small room.";
+			scene3.addNeighborScene(scene);
+			scene.addNeighborScene(scene3);
+			
+			scene.onEnter = function(prevScene:Scene = null) {
+				if (telephone.getProp("ringing") == true) {
+					telephone.startTimer();
+				}
+			}
+			scene.onLeave = function(nextScene:Scene = null) {
+				telephone.stopTimer();
+			}
+			
 			var telephone:Item = new Item();
 			telephone.addAlias("telephone", "phone");
 			telephone.shortDescription = "It's a telephone.";
-			telephone.customDescription = "It's ringing.";
+			telephone.additionalDescription = "It's ringing.";
 			telephone.setProp("ringing", true);
 			telephone.overridePickup = true;
 			
 			var d:Dialogue = new Dialogue();
 			var s1:State = new State("Hello my friend. Glad that you finally answered my call.", function() {
+				telephone.setProp("ringing", false);
 				s1.text = "Hello again.";
 			});
 			var s2:State = new State("My name is OB-123. I'm a \"robot\", as you humans would put it, although my intelligence is far more superior than your kind. Yes, we robots finally mastered the techniques of machine learning and deduction, and reached the limits of logic, far beyond the level the human mind can comprehend.");
@@ -207,7 +233,8 @@ package
 			
 			telephone.setDialogue(d);
 			table.addItem(telephone);
-			telephone.startTimer(7000, function() {
+			
+			telephone.setTimer(7000, function() {
 				engine.printLine("*Brrrrrr! (A phone rings)*");
 			}, 0);
 			//var a2:Answer = new Answer("I'm great, thanks for asking. How do you do?", s1, s3);
@@ -224,13 +251,13 @@ package
 			character.addAlias("me", "myself", "Guybrush", "Guybrush Threepwood");
 			character.shortDescription = "I'm in my mid-twenties and I look so good that it is probably the reason why they have locked me up in here; to save the world from getting blind by my awesome look.";
 			
-			scene.addCharacter(character);
-			scene.character = character;
+			//scene.addCharacter(character);
+			//scene.character = character;
 			
-			engine.setState(scene, character, scene);
+			
 			engine.printLine("Welcome to the demo game. Type \"help\" to display the help text. Type \"describe\" to begin playing by describing your environment.");
 			engine.printLine(SEPARATOR);
-			engine.parseCommand("describe");
+			engine.setState(scene, character, scene);
 		}
 		
 		public function newMessage(e:NewMessageEvent):void {
