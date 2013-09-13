@@ -15,10 +15,10 @@ package Base.Object
 	public class Item extends ActionHandler
 	{
 		public var items:Vector.<Item>;
-		public var aliases:Vector.<Alias>;
+		//public var aliases:Vector.<Alias>;
 		private var _description:String;
 		public var shortDescription:String;
-		public var customDescription:String = "";
+		public var additionalDescription:String = "";
 		
 		public var isVisible:Boolean;
 		public var isPickable:Boolean = false;
@@ -64,17 +64,25 @@ package Base.Object
 		}
 		
 		/** count = 0 means infinity */
-		public function startTimer(lifetime:int, func:Function, count:int):void {
-			try {
+		public function startTimer(/*lifetime:int, func:Function, count:int*/):void {
+			/*try {
 				timer.stop();
 			} catch (e:*) {
 				
 			}
-			engine.removeTimer(timer);
+			//engine.removeTimer(timer);
+			timer = new Timer(lifetime, count);
+			timer.addEventListener(TimerEvent.TIMER, func);*/
+			timer.start();
+			//engine.addTimer(timer);
+		}
+		
+		
+		public function setTimer(lifetime:int, func:Function, count:int):void {
+			//engine.removeTimer(timer);
 			timer = new Timer(lifetime, count);
 			timer.addEventListener(TimerEvent.TIMER, func);
-			timer.start();
-			engine.addTimer(timer);
+			//engine.addTimer(timer);
 		}
 		
 		public function stopTimer():void {
@@ -96,7 +104,7 @@ package Base.Object
 		}
 		
 		public function get description():String {
-			return shortDescription + " " + customDescription;
+			return shortDescription + " " + additionalDescription;
 		}
 		
 		public function get itemsDescription():String {
@@ -109,9 +117,9 @@ package Base.Object
 		}
 		
 		
-		public function get name():String {
+		/*public function get name():String {
 			return aliases[0].name;
-		}
+		}*/
 		
 		public function setProp(name:*, value:*):void {
 			prop.put(name, value);
@@ -121,19 +129,19 @@ package Base.Object
 			return prop.getValue(name);
 		}
 		
-		public function getRegexName():String {
+		/*public function getRegexName():String {
 			var s:String = aliases[0].name;
 			
 			for (var i:int = 1; i < aliases.length; i++) {
 				s += "|" + aliases[i].name;
 			}
 			return s;
-		}
+		}*/
 		
 		/** returns name with the article. */
-		public function get fullName():String {
+		/*public function get fullName():String {
 			return aliases[0].toString();
-		}
+		}*/
 		
 		public function addItem(...Items):void {
 			//items.concat(Items);
@@ -173,7 +181,7 @@ package Base.Object
 		/** Please give aliases with articles, such as "a cat", "an umbrella", etc.
 		 * If you just give it like e.g. "umbrella" only, the program will use the "a" article by default.
 		 * The articles are used while describing each object. */
-		public function addAlias(...Aliases):void {
+		/*public function addAlias(...Aliases):void {
 			for each(var name:String in Aliases) {
 				var match:Array = name.match("(a|an) (.+)");
 				if (match != null) {
@@ -191,7 +199,7 @@ package Base.Object
 				}
 			}
 			return false;
-		}
+		}*/
 		
 		public function init():void {
 			baseInit();
@@ -199,10 +207,10 @@ package Base.Object
 		
 		protected function baseInit():void {
 			items = new Vector.<Item>();
-			aliases = new Vector.<Alias>();
+			//aliases = new Vector.<Alias>();
 			owner = null;
 			shortDescription = "";
-			customDescription = "";
+			additionalDescription = "";
 			isVisible = true;
 			isPickable = false;
 			isPickedUp = false;

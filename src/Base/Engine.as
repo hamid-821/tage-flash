@@ -18,7 +18,7 @@ package Base
 		public var characters:Vector.<Character>;
 		public var scenes:Vector.<Scene>;
 		public var npcs:Vector.<NPC>;
-		public var timers:Vector.<Timer>;
+		//public var timers:Vector.<Timer>;
 		
 		/* variables related to current game state */
 		public var character:Character;
@@ -39,10 +39,17 @@ package Base
 			dispatchEvent(new OutputMessageEvent(string));
 		}
 		
-		public function setState(scene:Scene, character:Character, interactionHandler:ActionHandler):void {
-			this.scene = scene;
+		public function setState(newScene:Scene, character:Character, interactionHandler:ActionHandler):void {
+			var oldScene:Scene = this.scene;
+			
+			if (oldScene != null) {
+				oldScene.onLeave(newScene);
+			}
+			this.scene = newScene;
+			scene.onEnter(oldScene);
 			this.character = character;
 			this.interactionHandler = interactionHandler;
+			parseCommand("describe");
 		}
 		
 		public function parseCommand(command:String):void {
@@ -105,19 +112,29 @@ package Base
 			return null;
 		}
 		
-		public function addTimer(t:Timer):void {
+		/*public function addTimer(t:Timer):void {
 			timers.push(t);
 		}
 		public function removeTimer(t:Timer):void {
 			Util.remove(timers, t);
-		}
-		public function stopAllTimers():void {
-			for each(var t:Timer in timers) {
-				try {
-					t.stop();
-				} catch (e:*) {
-					
+		}*/
+		public function stopAllTimers(scene:Scene = null):void {
+			for each(var t:Item in items) {
+				if (scene != null) {
+					if (scene.findItem(t.name) != null) {
+						t.stopTimer();
+					}
 				}
+			}
+			for each(var t:Item in npcs) {
+				if (scene != null) {
+					if (scene.findItem(t.name) != null) {
+						t.stopTimer();
+					}
+				}
+			}
+			if (character != null) {
+				character.stopTimer();
 			}
 		}
 		
@@ -127,7 +144,7 @@ package Base
 			scenes = new Vector.<Scene>();
 			npcs = new Vector.<NPC>();
 			stopAllTimers();
-			timers = new Vector.<Timer>();
+			//timers = new Vector.<Timer>();
 			
 			character = null;
 			scene = null;

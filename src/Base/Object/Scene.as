@@ -9,19 +9,25 @@ package Base.Object
 	 */
 	public class Scene extends ActionHandler
 	{
-		public var name:String;
+		//public var name:String;
+		//public var aliases:Vector.<Alias>;
 		public var descriptionShort:String;
 		public var descriptionLong:String;
 		
 		public var items:Vector.<Item>;
-		public var characters:Vector.<Character>; //?
+		
 		public var npcs:Vector.<NPC>;
 		public var neighborScenes:Vector.<Scene>;
 		
 		public var firstTime:Boolean = false;
 		
-		public var character:Character;
+		public var isVisible:Boolean;
 		
+		public var onEnter:Function = function() {};
+		public var onLeave:Function = function() {};
+		
+		//public var character:Character;
+		//public var characters:Vector.<Character>; //?
 		
 		public function Scene(register:Boolean = true) 
 		{
@@ -36,14 +42,15 @@ package Base.Object
 		}
 		
 		public function init():void {
-			name = "";
+			//name = "";
 			descriptionLong = "";
 			descriptionShort = "";
 			firstTime = false;
 			items = new Vector.<Item>();
-			characters = new Vector.<Character>();
+			//characters = new Vector.<Character>();
 			npcs = new Vector.<NPC>();
 			neighborScenes = new Vector.<Scene>();
+			isVisible = true;
 		}
 		
 		public function findItem(alias:String):Item {
@@ -56,27 +63,26 @@ package Base.Object
 					return temp;
 				}
 			}
-			for each(var c:Character in characters) {
-				var temp:Item = c.findItem(alias);
-				if (temp != null) {
-					return temp;
-				}
-				var temp:Item = c.findInventory(alias);
-				if (temp != null) {
-					return temp;
-				}
+			
+			var temp:Item = engine.character.findItem(alias);
+			if (temp != null) {
+				return temp;
+			}
+			var temp:Item = engine.character.findInventory(alias);
+			if (temp != null) {
+				return temp;
 			}
 			return null;
 		}
 		
-		public function findCharacter(alias:String):Character {
+		/*public function findCharacter(alias:String):Character {
 			for each(var i:Character in characters) {
 				if (i.hasAlias(alias)) {
 					return i;
 				}
 			}
 			return null;
-		}
+		}*/
 		
 		public function findNPC(alias:String):NPC {
 			for each(var i:NPC in npcs) {
@@ -87,6 +93,22 @@ package Base.Object
 			return null;
 		}
 		
+		private function actionGo(command:String, match:Array) {
+			if (match[2] == "") {
+				engine.printLine("Go to where?");
+				return;
+			}
+			
+			var verb:String = match[1];
+			var placestr:String = match[2].substr(1, int.MAX_VALUE);
+			
+			var place:Scene = findNeighborScene(placestr);
+			if (place != null) {
+				engine.setState(place, engine.character, place);
+			} else {
+				engine.printLine("I can't go there.");
+			}
+		}
 		private function actionPickup(command:String, match:Array) {
 			if (match[2] == "") {
 				engine.printLine("Pick up what?");
@@ -106,7 +128,7 @@ package Base.Object
 				}
 				else if (!obj.isPickedUp) {
 					engine.printLine("Picked up the " + obj.name + ".");
-					character.addInventory(obj);
+					engine.character.addInventory(obj);
 				} else {
 					engine.printLine("I already got that.");
 				}
@@ -141,7 +163,7 @@ package Base.Object
 				var objname:String = match[2].substr(1, int.MAX_VALUE);
 				var obj:Item = findItem(objname);
 				var obj2:NPC = findNPC(objname);
-				var obj3:Character = findCharacter(objname);
+				var obj3:Character = engine.character;
 				
 				if (obj == null) {
 					obj = obj2;
@@ -160,11 +182,17 @@ package Base.Object
 		}
 		
 		public function describe(long:Boolean = false):void {
+			engine.printLine(name.toUpperCase());
 			long ? engine.printLine(descriptionLong) : engine.printLine(descriptionShort);
 			
 			for each(var object:Item in items.concat(npcs)) {
 				if(object.isVisible)
 					engine.printLine("There is " + object.aliases[0] + " here.");
+			}
+			
+			for each(var sc:Scene in neighborScenes) {
+				if(sc.isVisible)
+					engine.printLine("There is a path to " + sc.name + " here.");
 			}
 		}
 		
@@ -191,13 +219,13 @@ package Base.Object
 				if (npc != null) {
 					npc.startChat();
 				} else {
-					engine.printLine("I can't find her.");
+					engine.printLine("I can't find it.");
 				}
 			}
 		}
 		
 		private function actionInventory(command:String, match:Array):void {
-			character.printInventory();
+			engine.character.printInventory();
 		}
 		
 		private function setHelperActions():void {
@@ -206,6 +234,7 @@ package Base.Object
 			setAction("help$", actionHelp);
 			setAction("inventory$", actionInventory);
 			setAction("(talk|speak)(( (to|with)(.*))|)", actionTalk);
+			setAction("(go to|walk to)(.*)", actionGo);
 		}
 		
 		
@@ -222,16 +251,16 @@ package Base.Object
 				item.owner = null;
 		}
 		
-		public function addCharacter(...Characters):void {
+		/*public function addCharacter(...Characters):void {
 			for each(var item:Character in Characters) {
 				characters.push(item);
 				item.owner = this;
 			}
-		}
-		public function removeCharacter(character:Character):void {
+		}*/
+		/*public function removeCharacter(character:Character):void {
 			if(Util.remove(characters, character))
 				character.owner = null;
-		}
+		}*/
 		
 		public function addNPC(...Npcs):void {
 			for each(var item:NPC in Npcs) {
@@ -246,10 +275,20 @@ package Base.Object
 		}
 		
 		public function addNeighborScene(...Scenes):void {
-			neighborScenes.concat(Scenes);
+			for each(var item:Scene in Scenes) {
+				neighborScenes.push(item);
+			}
 		}
 		public function removeNeighborScene(scene:Scene):void {
 			Util.remove(neighborScenes, scene);
+		}
+		public function findNeighborScene(name:String):Scene {
+			for each(var s:Scene in this.neighborScenes) {
+				if (s.hasAlias(name)) {
+					return s;
+				}
+			}
+			return null;
 		}
 	}
 
