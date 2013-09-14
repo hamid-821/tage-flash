@@ -33,15 +33,15 @@ package
 			engine.addEventListener(OutputMessageEvent.OUTPUT_MESSAGE, outputMessage);
 			
 			
-			var scene:Scene = new Scene();
-			scene.addAlias("main room", "room");
-			scene.descriptionShort = "I'm in a room.";
-			scene.descriptionLong = "I'm in a room. I don't remember how I ended up here.";
+			var sceneMainRoom:Scene = new Scene();
+			sceneMainRoom.addAlias("main room", "room");
+			sceneMainRoom.descriptionShort = "I'm in a room.";
+			sceneMainRoom.descriptionLong = "I'm in a room. I don't remember how I ended up here.";
 			
 			var table:Item = new Item();
 			table.addAlias("table");
 			table.shortDescription = "It's a table.";
-			scene.addItem(table);
+			sceneMainRoom.addItem(table);
 			
 			var pencil:Item = new Item();
 			pencil.isPickable = true;
@@ -55,16 +55,16 @@ package
 			note.shortDescription = "It's a note. Maybe it has some clues on why I am here and what is going on.";
 			table.addItem(note);
 			
-			scene.setAction1(note, "(use|read)", function() {
+			sceneMainRoom.setAction1(note, "(use|read)", function() {
 				engine.printLine("Dear Sir,\n\nYou are probably wondering why you are here. Sorry for the inconvenience, but we had to bring you here for a special purpose. Please do not try to run away, for soon you will get to know the reason and the necessity of your presence.\n\nBest,\nAdministration");
 			});
 			
 			var cupboard:Item = new Item();
 			cupboard.addAlias("cupboard");
 			cupboard.shortDescription = "It's a cupboard.";
-			scene.addItem(cupboard);
+			sceneMainRoom.addItem(cupboard);
 			cupboard.setProp("open", false);
-			scene.setAction1(cupboard, "close", function() {
+			sceneMainRoom.setAction1(cupboard, "close", function() {
 				if (cupboard.getProp("open") == false) {
 					engine.printLine("It's already closed.");
 				} else {
@@ -76,7 +76,7 @@ package
 					}
 				}
 			});
-			scene.setAction1(cupboard, "open", function() {
+			sceneMainRoom.setAction1(cupboard, "open", function() {
 				if (cupboard.getProp("open") == true) {
 					engine.printLine("It's already open.");
 				} else {
@@ -94,7 +94,7 @@ package
 			clothes.isPickable = true;
 			clothes.addAlias("cloth", "clothes");
 			clothes.shortDescription = "They are my clothes! No wonder why I was naked before.";
-			scene.setAction1(clothes, "(use|put on|wear)", function() {
+			sceneMainRoom.setAction1(clothes, "(use|put on|wear)", function() {
 				if (!clothes.isVisible) {
 					engine.printLine("I can't find the object.");
 				}
@@ -113,9 +113,9 @@ package
 			door.additionalDescription = "It seems like it's locked.";
 			door.setProp("open", false);
 			door.setProp("locked", true);
-			scene.addItem(door);
+			sceneMainRoom.addItem(door);
 			
-			scene.setAction1(door, "(enter|use)", function() {
+			sceneMainRoom.setAction1(door, "(enter|use)", function() {
 				if (door.getProp("open") == false) {
 					engine.printLine("It's closed.");
 				} 
@@ -126,10 +126,10 @@ package
 				}
 			});
 			
-			scene.setAction1(door, "(unlock)", function() {
+			sceneMainRoom.setAction1(door, "(unlock)", function() {
 				engine.printLine("I can't unlock it with my bare hands. The instructions on the lock says that the door can be unlocked with a pencil. How convenient.");	
 			});
-			scene.setAction1(door, "(open)", function() {
+			sceneMainRoom.setAction1(door, "(open)", function() {
 				if (door.getProp("locked") == true) {
 					engine.printLine("It's locked.");
 				}
@@ -143,7 +143,7 @@ package
 				}
 			});
 			
-			scene.setAction1(door, "(close)", function() {
+			sceneMainRoom.setAction1(door, "(close)", function() {
 				if (door.getProp("open") == true) {
 					door.setProp("open", false);
 					engine.printLine("Closed the door.");
@@ -165,32 +165,32 @@ package
 					engine.printLine("Tadaa! The door is unlocked!");
 					door.additionalDescription = "";
 					
-					var scene2:Scene = new Scene();
-					scene2.descriptionShort = "I'm in a garden full of people.";
-					scene2.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
+					var sceneWin:Scene = new Scene();
+					sceneWin.descriptionShort = "I'm in a garden full of people.";
+					sceneWin.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
 					
 					//scene.addNeighborScene(scene2);
 					
-					engine.setState(scene2, character, scene2);
+					engine.setState(sceneWin, character, sceneWin);
 					//engine.stopAllTimers(scene);
 				}
 			};
-			scene.setAction2(openDoorFunc, "(unlock) $1 with $2", door, pencil);
-			scene.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
+			sceneMainRoom.setAction2(openDoorFunc, "(unlock) $1 with $2", door, pencil);
+			sceneMainRoom.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
 				
-			var scene3:Scene = new Scene();
-			scene3.addAlias("small room", "room", "little room");
-			scene3.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
-			scene3.descriptionShort = "This is a small room.";
-			scene3.addNeighborScene(scene);
-			scene.addNeighborScene(scene3);
+			var sceneSmallRoom:Scene = new Scene();
+			sceneSmallRoom.addAlias("small room", "room", "little room");
+			sceneSmallRoom.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
+			sceneSmallRoom.descriptionShort = "This is a small room.";
+			sceneSmallRoom.addNeighborScene(sceneMainRoom);
+			sceneMainRoom.addNeighborScene(sceneSmallRoom);
 			
-			scene.onEnter = function(prevScene:Scene = null) {
+			sceneMainRoom.onEnter = function(prevScene:Scene = null) {
 				if (telephone.getProp("ringing") == true) {
 					telephone.startTimer();
 				}
 			}
-			scene.onLeave = function(nextScene:Scene = null) {
+			sceneMainRoom.onLeave = function(nextScene:Scene = null) {
 				telephone.stopTimer();
 			}
 			
@@ -242,7 +242,7 @@ package
 			//	s2, s4);
 			
 			
-			scene.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
+			sceneMainRoom.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
 				telephone.stopTimer();
 				telephone.startChat();
 			});
@@ -257,7 +257,7 @@ package
 			
 			engine.printLine("Welcome to the demo game. Type \"help\" to display the help text. Type \"describe\" to begin playing by describing your environment.");
 			engine.printLine(SEPARATOR);
-			engine.setState(scene, character, scene);
+			engine.setState(sceneMainRoom, character, sceneMainRoom);
 		}
 		
 		public function newMessage(e:NewMessageEvent):void {
