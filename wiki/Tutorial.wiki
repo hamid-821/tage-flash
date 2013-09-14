@@ -1,0 +1,110 @@
+#summary This is a tutorial game for the game engine TAGE.
+
+=Introduction=
+
+In this tutorial, I will try to walk you through programming a sample game with TAGE. I will try to show all the features of the game engine.
+
+==1. Creating the Interface and the Engine==
+
+First, we need an engine to simulate the game. Engine is the main component of the engine. All it does is accepting input commands as string and returning an answer as output. The output is sent by an event, rather than returning a string.
+
+{{{
+var engine:Engine = new Engine();
+engine.addEventListener(OutputMessageEvent.OUTPUT_MESSAGE, outputMessage);
+}}}
+
+We also need an interface to receive input and show output. For this tutorial, I will use the Console class included in the engine.
+
+{{{
+console = new Console();
+addChild(console);
+console.addEventListener(NewMessageEvent.NEW_MESSAGE, newMessage);
+}}}
+
+Here are the codes for the event handlers:
+
+{{{
+public function newMessage(e:NewMessageEvent):void {
+	var text:String = e.text;
+	console.println("> " + text);
+	engine.parseCommand(text);
+}
+
+public function outputMessage(e:OutputMessageEvent):void {
+	var text:String = e.message;
+	console.print(text);
+}
+}}}
+
+==2. Creating Scenes==
+
+Scenes are what hold objects inside and create a scenery in which the game is currently played. The player can interact with objects in the current scene.
+
+For this demo, we will create three scenes.
+
+{{{
+var sceneMainRoom:Scene = new Scene();
+sceneMainRoom.addAlias("main room", "room");
+sceneMainRoom.descriptionShort = "I'm in a room.";
+sceneMainRoom.descriptionLong = "I'm in a room. I don't remember how I ended up here.";
+
+var sceneSmallRoom:Scene = new Scene();
+sceneSmallRoom.addAlias("small room", "room", "little room");
+sceneSmallRoom.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
+sceneSmallRoom.descriptionShort = "This is a small room.";
+sceneSmallRoom.addNeighborScene(sceneMainRoom);
+sceneMainRoom.addNeighborScene(sceneSmallRoom);
+
+var sceneWin:Scene = new Scene();
+sceneWin.descriptionShort = "I'm in a garden full of people.";
+sceneWin.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
+}}}
+
+addAlias adds aliases (names) for the scene. the player can refer to the scene with one of these names, for example while coming to this room from another place. when the player says "go to room" or "go to main room", both commands will work.
+
+descriptionShort is the short description that is showed when the player wants to describe the room. descriptionLong is printed the first time the player enters the room.
+
+addNeighborScene adds a neighbor to the scene. The player can go from a scene to its neighbors.
+
+==3. Creating Items==
+
+This is the longest part, so get ready. We will create items, define interactions with them, and add them to the scene. The interactions are added to the scene the objects belong to, because each time the player types a command, the required object will have to be searched in the current scene.
+
+{{{
+var table:Item = new Item();
+table.addAlias("table");
+table.shortDescription = "It's a table.";
+sceneMainRoom.addItem(table);
+}}}
+
+The items have to be added to a scene (or to charcter's inventory - we'll come to that later) to be included in the game. 
+
+Items have short description and additional description properties; additional description is useful for changeable properties of the object, for example if a door is open you may choose to have the description "It's a door. It's open.", and if it's closed, it will simply be "It's a door. It's closed". So the idea is, shortDescription = "It's a door.", and additionalDescription = "It's closed.". When the player opens the door, you simply assign additionalDescription to "It's open."
+
+{{{
+var pencil:Item = new Item();
+pencil.isPickable = true;
+pencil.addAlias("a pencil", "a pen");
+pencil.shortDescription = "It's a pencil. Hmm.";
+table.addItem(pencil);	
+
+var note:Item = new Item();
+note.isPickable = true;
+note.addAlias("note", "notes", "paper");
+note.shortDescription = "It's a note. Maybe it has some clues on why I am here and what is going on.";
+table.addItem(note);	
+}}}
+
+isPickable property defines whether the object may be picked up by the player. We will come to commands later.
+
+Here you see we add objects to another object, in this example we add a note and a pen to the table. So, these objects "belong to" table; they are described when the player looks at the table, they aren't described in the general description of the scene.
+
+{{{
+var cupboard:Item = new Item();
+cupboard.addAlias("cupboard");
+cupboard.shortDescription = "It's a cupboard.";
+sceneMainRoom.addItem(cupboard);
+cupboard.setProp("open", false);
+}}}
+
+setProp and getProp are two functions to add custom properties to your object, for customizing them. Here we use a custom property called "open", to detect whether the cupboard is opened or not.
