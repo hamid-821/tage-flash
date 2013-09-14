@@ -1,14 +1,38 @@
 #summary This is a tutorial game for the game engine TAGE.
-#labels Phase-Implementation
+#labels tutorial
 
-= Introduction =
+=Introduction=
 
-Add your content here.
+In this tutorial, I will try to walk you through programming a sample game with TAGE. I will try to show all the features of the game engine.
 
+==1. Creating the Interface and the Engine==
 
-= Details =
+First, we need an engine to simulate the game. Engine is the main component of the engine. All it does is accepting input commands as string and returning an answer as output. The output is sent by an event, rather than returning a string.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+{{{
+var engine:Engine = new Engine();
+engine.addEventListener(OutputMessageEvent.OUTPUT_MESSAGE, outputMessage);
+}}}
+
+We also need an interface to receive input and show output. For this tutorial, I will use the Console class included in the engine.
+
+{{{
+console = new Console();
+addChild(console);
+console.addEventListener(NewMessageEvent.NEW_MESSAGE, newMessage);
+}}}
+
+Here are the codes for the event handlers:
+
+{{{
+public function newMessage(e:NewMessageEvent):void {
+	var text:String = e.text;
+	console.println("> " + text);
+	engine.parseCommand(text);
+}
+
+public function outputMessage(e:OutputMessageEvent):void {
+	var text:String = e.message;
+	console.print(text);
+}
+}}}
