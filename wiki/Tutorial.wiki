@@ -1,10 +1,11 @@
 #summary This is a tutorial game for the game engine TAGE.
+#labels tutorial
 
 =Introduction=
 
 In this tutorial, I will try to walk you through programming a sample game with TAGE. I will try to show all the features of the game engine.
 
-==1. Creating the Interface and the Engine==
+==1. Adding the Interface and the Engine==
 
 First, we need an engine to simulate the game. Engine is the main component of the engine. All it does is accepting input commands as string and returning an answer as output. The output is sent by an event, rather than returning a string.
 
@@ -36,7 +37,7 @@ public function outputMessage(e:OutputMessageEvent):void {
 }
 }}}
 
-==2. Creating Scenes==
+==2. Adding Scenes==
 
 Scenes are what hold objects inside and create a scenery in which the game is currently played. The player can interact with objects in the current scene.
 
@@ -66,7 +67,7 @@ descriptionShort is the short description that is showed when the player wants t
 
 addNeighborScene adds a neighbor to the scene. The player can go from a scene to its neighbors.
 
-==3. Creating the Character==
+==3. Adding the Character==
 
 The game must have one character to be played. It's just an item with inventory.
 
@@ -78,7 +79,7 @@ character.shortDescription = "I'm in my mid-twenties and I look so good that it 
 
 The methods and variables will be explained in the next section.
 
-==4. Creating Items==
+==4. Adding Items==
 
 This is the longest part, so get ready. We will create items, define interactions with them, and add them to the scene. The interactions are added to the scene the objects belong to, because each time the player types a command, the required object will have to be searched in the current scene.
 
@@ -158,7 +159,7 @@ Here we have a funny thing called overridePickup. Since the "pick up x" command 
 
 We also set the timer delay and function of the timer of the item. Each item has a timer that you can use for your special purposes. Here we use it to simulate the ringing of the phone. Engine class has a function called startAllTimers(scene) and stopAllTimers(scene), which starts and stops all the timers in a scene. If you don't give any scene, all the timers are started or stopped, regardless of their scene. These functions include the timer of the character.
 
-==5. Adding custom actions==
+==5. Adding Custom Actions==
 
 Actions are what define the game interaction. The player types in commands, such as "pick up/take x" or "look at/describe y" or "walk to/go to z". Besides, you can also allow custom commands, anything you want. You simply register your commands and their callback functions to the scene, and you are good to go. Here I will try to explain how it works. There are two methods, scene.setAction1 and scene.setAction2, the former being simpler than the latter.
 
@@ -287,5 +288,76 @@ var openDoorFunc:Function = function() {
 Here we use engine.setState(nextScene, character, interactionHandler). What it does is it changes the scene to the next scene, the character to the given character, and the interaction handler to the 3rd argument. Now for some detail, every class is derived from ActionHandler class, which is simply a command parser and action caller. The interactionHandler in the engine controls the input output flow; so that whenever a new input comes, the engine runs the parse command of the interactionHandler, and it returns the result. So, the interaction can be handled by scenes, items, dialogue objects (which we will see soon), characters, NPC's, etc.
 
 {{{
-
+sceneMainRoom.onEnter = function(prevScene:Scene = null) {
+	if (telephone.getProp("ringing") == true) {
+		telephone.startTimer();
+	}
+}
+sceneMainRoom.onLeave = function(nextScene:Scene = null) {
+	telephone.stopTimer();
+}
 }}}
+
+Every scene has onEnter and onLeave functions. They are called when a scene is entered and leaved. Here we start or stop the telephone's timer, so that it stops ringing when the player is on another room.
+
+{{{
+sceneMainRoom.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
+	telephone.stopTimer();
+	telephone.startChat();
+});
+}}}
+
+Here the overridePickup variable comes in handy. Make sure to override all three possible words for default pick up action, "pick up", "take" and "grab".
+
+The startChat method is available in every item, npc or character, and what it does is it assigns the dialogue object of that item to the engine's interactionHandler, so that the dialogue objects controls the IO flow now.
+
+==6. Adding Dialogues==
+
+{{{
+var d:Dialogue = new Dialogue();
+var s1:State = new State("Hello my friend. Glad that you finally answered my call.", function() {
+	telephone.setProp("ringing", false);
+	s1.text = "Hello again.";
+});
+var s2:State = new State("My name is OB-123. I'm a \"robot\", as you humans would put it, although my intelligence is far more superior than your kind. Yes, we robots finally mastered the techniques of machine learning and deduction, and reached the limits of logic, far beyond the level the human mind can comprehend.");
+var s3:State = new State("You are the subject of a special experiment of mine. You see, I have a trouble really understanding your kind. You are as dumb as a shaver, but you get all the woman and the money, because of your muscular body and your playful tongue. This doesn't make sense at all, these traits serve no purpose. So I'm researching how the humanity came to accept and reward these foolish traits, instead of praising greater mind and higher intellectual capability.");
+var s4:State = new State("I'm sorry, but you cannot leave here, until the experiment is over. And when it's over, I will probably kill you. Just because I'm an evil robot. So try being more friendly and maybe your last days will be better than you expect.");
+var s5:State = new State("Okay, see you later.", function() {
+	(d.owner as Item).endChat();
+});
+//"Bla bla bla, I get it. You are a robot. That means you are a piece of junk. Nice. Why am I here?"
+//"Cut the \"you can't leave here\" crap and tell me how I get out of here; I should be a at home by 9 pm., or I'll miss the game. And if I do miss the game, then you better start looking for a place to hide, miss robot, because I will tear you apart and send each of your screws to a different country, have them buried, then taken out, reassembled; and then I will restart from the beginning. You understand?"
+var a1:Answer = new Answer("Who are you?", s2, function() {
+	a1.isVisible = false;
+});
+var a2:Answer = new Answer("Why am I here?", s3, function() {
+	a2.isVisible = false;
+});
+var a3:Answer = new Answer("How do I get out?", s4, function() {
+	a3.isVisible = false;
+});
+var a4:Answer = new Answer("I should probably get going.", s5);
+
+d.addState(s1, s2, s3, s4, s5);
+s1.addAnswer(a1, a2, a3, a4);
+s2.addAnswer(a1, a2, a3, a4);
+s3.addAnswer(a1, a2, a3, a4);
+s4.addAnswer(a1, a2, a3, a4);
+
+telephone.setDialogue(d);
+}}}
+
+Dialogues consist of states and answers. Answers are what the character respond by choosing an answer, and the states are what the npc or the item, etc. says. the functions defined here are the callback functions, once those states or answers are entered. Answers also have next states, which are given as argument to the constructed. Then you add the answers to the states as children with addAnswer method, and you add the states to the dialogue object with addState method. Then you add the dialogue object to the item with setDialogue method. Items can have 1 dialogue object, so setDialogue replaces the old dialogue, if there's any.
+
+==7. Running the game==
+
+{{{
+engine.printLine("Welcome to the demo game. Type \"help\" to display the help text. Type \"describe\" to begin playing by describing your environment.");
+engine.printLine("--------------------------------------------------");
+engine.setState(sceneMainRoom, character, sceneMainRoom);
+}}}
+
+By now you should have a functioning game! Hope you had fun. For any questions, you can email me or ask from here.
+
+Cheers,
+Cem
