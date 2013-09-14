@@ -10,6 +10,7 @@ package
 	import Base.Object.Scene;
 	import Base.OutputMessageEvent;
 	import flash.display.Sprite;
+	import flash.display.StageScaleMode;
 	import flash.utils.Timer;
 	import Visual.Console;
 	import Visual.NewMessageEvent;
@@ -27,6 +28,8 @@ package
 		
 		public function Main() 
 		{
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			
 			console = new Console();
 			addChild(console);
 			console.addEventListener(NewMessageEvent.NEW_MESSAGE, newMessage);
