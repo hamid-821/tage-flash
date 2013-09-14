@@ -159,3 +159,133 @@ Here we have a funny thing called overridePickup. Since the "pick up x" command 
 We also set the timer delay and function of the timer of the item. Each item has a timer that you can use for your special purposes. Here we use it to simulate the ringing of the phone. Engine class has a function called startAllTimers(scene) and stopAllTimers(scene), which starts and stops all the timers in a scene. If you don't give any scene, all the timers are started or stopped, regardless of their scene. These functions include the timer of the character.
 
 ==5. Adding custom actions==
+
+Actions are what define the game interaction. The player types in commands, such as "pick up/take x" or "look at/describe y" or "walk to/go to z". Besides, you can also allow custom commands, anything you want. You simply register your commands and their callback functions to the scene, and you are good to go. Here I will try to explain how it works. There are two methods, scene.setAction1 and scene.setAction2, the former being simpler than the latter.
+
+Note: You can spare lots of time by using regex in your commands. The callback functions are called with (command:String, match:Array) pair, command being the formatted command of the player (useless spaces are removed, the command is made all lower case, the articles are removed, and so on), and match being the match array for the regex result matched with the player's command.
+
+{{{
+sceneMainRoom.setAction1(note, "(use|read)", function() {
+	engine.printLine("Dear Sir,\n\nYou are probably wondering why you are here. Sorry for the inconvenience, but we had to bring you here for a special purpose. Please do not try to run away, for soon you will get to know the reason and the necessity of your presence.\n\nBest,\nAdministration");
+});
+}}}
+
+Here we add a function to our scene for the note object. The command name is either use or read. So if the player types in "use x" or "read x", x being any one of the aliases of the note object, this function is called.
+
+{{{
+sceneMainRoom.setAction1(cupboard, "close", function() {
+	if (cupboard.getProp("open") == false) {
+		engine.printLine("It's already closed.");
+	} else {
+		cupboard.setProp("open", false);
+		cupboard.additionalDescription = "";
+		engine.printLine("Closed the cupboard.");
+		for each(var i:Item in cupboard.items) {
+			i.isVisible = false;
+		}
+	}
+});
+sceneMainRoom.setAction1(cupboard, "open", function() {
+	if (cupboard.getProp("open") == true) {
+		engine.printLine("It's already open.");
+	} else {
+		cupboard.setProp("open", true);
+		cupboard.additionalDescription = "It's open.";
+		engine.printLine("Opened the cupboard.");
+		for each(var i:Item in cupboard.items) {
+			i.isVisible = true;
+		}
+		engine.printLine(cupboard.itemsDescription);
+	}
+});
+}}}
+
+Here we added cupboard's actions.
+
+{{{
+sceneMainRoom.setAction1(clothes, "(use|put on|wear)", function() {
+	if (!clothes.isVisible) {
+		engine.printLine("I can't find the object.");
+	}
+	else {
+		engine.printLine("I put on my clothes. It feels better to be dressed, even if I'm alone.");
+		clothes.remove();
+		engine.unregister(clothes);
+	}
+});
+}}}
+
+The actions for clothes object. Here we see the functions called "item.remove()" and "engine.unregister()". They are kind of self explanatory. When you call engine.unregister, there is no way to add that object to the game, unless you call engine.register; whereas when you call item.remove(), it only removes it from its owner.
+
+{{{
+sceneMainRoom.setAction1(door, "(enter|use)", function() {
+	if (door.getProp("open") == false) {
+		engine.printLine("It's closed.");
+	} 
+	else {
+		engine.printLine("Wohoo, I'm free!");
+		engine.printLine(SEPARATOR);
+		engine.printLine("Thanks for playing the demo level. Hope you enjoyed it, and hope you enjoy the game engine!");
+	}
+});
+
+sceneMainRoom.setAction1(door, "(unlock)", function() {
+	engine.printLine("I can't unlock it with my bare hands. The instructions on the lock says that the door can be unlocked with a pencil. How convenient.");	
+});
+sceneMainRoom.setAction1(door, "(open)", function() {
+	if (door.getProp("locked") == true) {
+		engine.printLine("It's locked.");
+	}
+	else if (door.getProp("open") == true) {
+		engine.printLine("It's already open.");
+	}
+	else {
+		engine.printLine("Opened the door.");
+		door.setProp("open", true);
+		door.additionalDescription = "It's open.";
+	}
+});
+
+sceneMainRoom.setAction1(door, "(close)", function() {
+	if (door.getProp("open") == true) {
+		door.setProp("open", false);
+		engine.printLine("Closed the door.");
+		door.additionalDescription = "";
+	} else {
+		engine.printLine("It's already closed.");
+	}
+});
+}}}
+
+The actions for the door object. We also make use of  the variable "additionalDescription" here.
+
+{{{
+sceneMainRoom.setAction2(openDoorFunc, "(unlock|open) $1 with $2", door, pencil);
+sceneMainRoom.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
+}}}
+
+This is the second set action function. it's more complicated; it lets you use multiple objects and label them with $1,2,3, etc. The parser will replace the dollars with all of the items' aliases with respect to the argument array. For example, "(unlock|open) $1 with $2", door, pencil means (unlock or open) + any one of the aliases of "door" + with + any one of the aliases of "pencil". You can use as many number of objects as you want. Below we will define openDoorFunc.
+
+{{{
+var openDoorFunc:Function = function() { 
+	if (door.getProp("locked") == false) {
+		engine.printLine("The door is already open.");
+	} 
+	else if (pencil.isPickedUp == false) { 
+		engine.printLine("I don't have the object.");
+	}
+	else {
+		door.setProp("locked", false);
+		engine.printLine("Tadaa! The door is unlocked!");
+		door.additionalDescription = "";
+		
+		engine.setState(sceneWin, character, sceneWin);
+	}
+};
+}}}
+
+Here we use engine.setState(nextScene, character, interactionHandler). What it does is it changes the scene to the next scene, the character to the given character, and the interaction handler to the 3rd argument. Now for some detail, every class is derived from ActionHandler class, which is simply a command parser and action caller. The interactionHandler in the engine controls the input output flow; so that whenever a new input comes, the engine runs the parse command of the interactionHandler, and it returns the result. So, the interaction can be handled by scenes, items, dialogue objects (which we will see soon), characters, NPC's, etc.
+
+{{{
+
+}}}
