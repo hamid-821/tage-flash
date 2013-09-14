@@ -175,7 +175,7 @@ package
 					//engine.stopAllTimers(scene);
 				}
 			};
-			sceneMainRoom.setAction2(openDoorFunc, "(unlock) $1 with $2", door, pencil);
+			sceneMainRoom.setAction2(openDoorFunc, "(unlock|open) $1 with $2", door, pencil);
 			sceneMainRoom.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
 				
 			var sceneSmallRoom:Scene = new Scene();

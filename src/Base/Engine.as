@@ -138,6 +138,26 @@ package Base
 			}
 		}
 		
+		public function startAllTimers(scene:Scene = null):void {
+			for each(var t:Item in items) {
+				if (scene != null) {
+					if (scene.findItem(t.name) != null) {
+						t.startTimer();
+					}
+				}
+			}
+			for each(var t:Item in npcs) {
+				if (scene != null) {
+					if (scene.findItem(t.name) != null) {
+						t.startTimer();
+					}
+				}
+			}
+			if (character != null) {
+				character.startTimer();
+			}
+		}
+		
 		public function init():void {
 			items = new Vector.<Item>();
 			characters = new Vector.<Character>();
