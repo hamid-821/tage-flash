@@ -325,8 +325,6 @@ var s4:State = new State("I'm sorry, but you cannot leave here, until the experi
 var s5:State = new State("Okay, see you later.", function() {
 	(d.owner as Item).endChat();
 });
-//"Bla bla bla, I get it. You are a robot. That means you are a piece of junk. Nice. Why am I here?"
-//"Cut the \"you can't leave here\" crap and tell me how I get out of here; I should be a at home by 9 pm., or I'll miss the game. And if I do miss the game, then you better start looking for a place to hide, miss robot, because I will tear you apart and send each of your screws to a different country, have them buried, then taken out, reassembled; and then I will restart from the beginning. You understand?"
 var a1:Answer = new Answer("Who are you?", s2, function() {
 	a1.isVisible = false;
 });
