@@ -66,7 +66,19 @@ descriptionShort is the short description that is showed when the player wants t
 
 addNeighborScene adds a neighbor to the scene. The player can go from a scene to its neighbors.
 
-==3. Creating Items==
+==3. Creating the Character==
+
+The game must have one character to be played. It's just an item with inventory.
+
+{{{
+var character:Character = new Character();
+character.addAlias("me", "myself", "Guybrush", "Guybrush Threepwood");
+character.shortDescription = "I'm in my mid-twenties and I look so good that it is probably the reason why they have locked me up in here; to save the world from getting blind by my awesome look.";
+}}}
+
+The methods and variables will be explained in the next section.
+
+==4. Creating Items==
 
 This is the longest part, so get ready. We will create items, define interactions with them, and add them to the scene. The interactions are added to the scene the objects belong to, because each time the player types a command, the required object will have to be searched in the current scene.
 
@@ -108,3 +120,42 @@ cupboard.setProp("open", false);
 }}}
 
 setProp and getProp are two functions to add custom properties to your object, for customizing them. Here we use a custom property called "open", to detect whether the cupboard is opened or not.
+
+{{{
+var clothes:Item = new Item();
+clothes.isPickable = true;
+clothes.addAlias("cloth", "clothes");
+clothes.shortDescription = "They are my clothes! No wonder why I was naked before.";
+clothes.isVisible = false;
+cupboard.addItem(clothes);
+}}}
+
+Here we set another property of items, isVisible. If an object is invisible, the player won't see it in descriptions. For example when a cupboard is closed, the objects inside it should be invisible.
+
+{{{
+var door:Item = new Item();
+door.addAlias("door");
+door.shortDescription = "It's a door.";
+door.additionalDescription = "It seems like it's locked.";
+door.setProp("open", false);
+door.setProp("locked", true);
+sceneMainRoom.addItem(door);
+
+var telephone:Item = new Item();
+telephone.addAlias("telephone", "phone");
+telephone.shortDescription = "It's a telephone.";
+telephone.additionalDescription = "It's ringing.";
+telephone.setProp("ringing", true);
+telephone.overridePickup = true;
+table.addItem(telephone);
+
+telephone.setTimer(7000, function() {
+	engine.printLine("*Brrrrrr! (A phone rings)*");
+}, 0);
+}}}
+
+Here we have a funny thing called overridePickup. Since the "pick up x" command is predefined in the engine, this variable is needed to override the engine's behaviour of pick up command. I use it here because "pick up phone" here means answering it, rather than actually picking it up. All the objects are unpickable by default, by the way.
+
+We also set the timer delay and function of the timer of the item. Each item has a timer that you can use for your special purposes. Here we use it to simulate the ringing of the phone. Engine class has a function called startAllTimers(scene) and stopAllTimers(scene), which starts and stops all the timers in a scene. If you don't give any scene, all the timers are started or stopped, regardless of their scene. These functions include the timer of the character.
+
+==5. Adding custom actions==
