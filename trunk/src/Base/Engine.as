@@ -15,20 +15,23 @@ package Base
 		public static var inst:Engine;
 		
 		public var items:Vector.<Item>;
-		public var characters:Vector.<Character>;
+		
 		public var scenes:Vector.<Scene>;
 		public var npcs:Vector.<NPC>;
 		//public var timers:Vector.<Timer>;
 		
 		/* variables related to current game state */
-		public var character:Character;
-		public var scene:Scene;
+		private var _character:Character;
+		private var _scene:Scene;
 		public var interactionHandler:ActionHandler; // pass the incoming command to this handler directly
 		
 		public function Engine() 
 		{
 			inst = this;
 			init();
+			
+			
+			setHelperActions();
 		}
 		
 		public function printLine(string:String):void {
@@ -39,7 +42,7 @@ package Base
 			dispatchEvent(new OutputMessageEvent(string));
 		}
 		
-		public function setState(newScene:Scene, character:Character, interactionHandler:ActionHandler):void {
+		public function setState(newScene:Scene, char:Character=null, actionHandler:ActionHandler=null):void {
 			var oldScene:Scene = this.scene;
 			
 			if (oldScene != null) {
@@ -47,10 +50,187 @@ package Base
 			}
 			this.scene = newScene;
 			scene.onEnter(oldScene);
-			this.character = character;
-			this.interactionHandler = interactionHandler;
+			
+			if (char != null) {
+				this.character = char;
+			}
+			
+			this.interactionHandler = (actionHandler == null ? this : actionHandler);
 			parseCommand("describe");
 		}
+		
+		public function setAction2(func:Function, pattern:String, ...Items):void {
+			for (var i:int = 0; i < Items.length; i++) {
+				var vari:String = ("\$" + (i + 1));
+				pattern = Util.replaceAll(pattern, vari, "(" + (Items[i] as Item).getRegexName() + ")");
+			}
+			
+			var func2:Function = function() {
+				for each(var item:Item in Items) {
+					if (item.owner == null) {
+						printLine("I can't do it.");
+						return;
+					} else if (item.owner == Engine.inst.character || item.owner == Engine.inst.scene || Engine.inst.scene.findItem(item.name)) {
+						continue;
+					} else {
+						printLine("I can't do it.");
+						return;
+					}
+				}
+				func();
+			}
+			
+			setAction(pattern+"$" , func2);
+		}
+		
+		public function setAction1(item:Item, pattern:String, func:Function):void {
+			var func2:Function = function() {
+				if (item.owner == null) {
+					printLine("I can't do it.");
+					return;
+				} else if (item.owner == Engine.inst.character || item.owner == Engine.inst.scene || Engine.inst.scene.findItem(item.name)) {
+					func();
+				} else {
+					printLine("I can't do it.");
+					return;
+				}
+			}
+			setAction(pattern + " (" + item.getRegexName() + ")$" , func2);
+		}
+		
+		private function actionGo(command:String, match:Array) {
+			if (match[2] == "") {
+				this.printLine("Go to where?");
+				return;
+			}
+			
+			var verb:String = match[1];
+			var placestr:String = match[2].substr(1, int.MAX_VALUE);
+			
+			var place:Scene = scene.findNeighborScene(placestr);
+			if (place != null) {
+				this.setState(place, this.character, this);
+			} else {
+				this.printLine("I can't go there.");
+			}
+		}
+		private function actionPickup(command:String, match:Array) {
+			if (match[2] == "") {
+				this.printLine("Pick up what?");
+				return;
+			}
+			
+			var verb:String = match[1];
+			var objname:String = match[2].substr(1, int.MAX_VALUE);
+			
+			var obj:Item = scene.findItem(objname);
+			if (obj == null) {
+				this.printLine("I can't find it.");
+				return;
+			}
+			if (obj.overridePickup) return;
+			
+			if (obj.isVisible && obj != null) {
+				if (!obj.isPickable) {
+					this.printLine("I can't pick that up.");
+				}
+				else if (!obj.isPickedUp) {
+					this.printLine("Picked up the " + obj.name + ".");
+					this.character.addInventory(obj);
+				} else {
+					this.printLine("I already got that.");
+				}
+			} else {
+				this.printLine("I can't find it.");
+			}
+		}
+		
+		private function actionDescribe(command:String, match:Array) {
+			if (match[2] == "") {
+				if (!scene.firstTime) {
+					scene.firstTime = true;
+					describe(true);
+				} else {
+					describe(false);
+				}
+			}
+			else {
+				var objname:String = match[2].substr(1, int.MAX_VALUE);
+				var obj:Item = scene.findItem(objname);
+				var obj2:NPC = scene.findNPC(objname);
+				var obj3:Character = this.character;
+				
+				if (obj == null) {
+					obj = obj2;
+					if (obj == null) {
+						obj = obj3;
+					}
+				}
+				if (obj == null) {
+					this.printLine("I can't find that.");
+					return;
+				} 
+				else {
+					this.printLine(obj.fullDescription);
+				}
+			}
+		}
+		
+		public function describe(long:Boolean = false):void {
+			this.printLine(scene.name.toUpperCase());
+			long ? this.printLine(scene.descriptionLong) : this.printLine(scene.descriptionShort);
+			
+			for each(var object:Item in scene.items.concat(scene.npcs)) {
+				if(object.isVisible)
+					this.printLine("There is " + object.aliases[0] + " here.");
+			}
+			
+			for each(var sc:Scene in scene.neighborScenes) {
+				if(sc.isVisible)
+					this.printLine("There is a path to " + sc.name + " here.");
+			}
+		}
+		
+		private function actionHelp(command:String, match:Array):void {
+			this.printLine("commands:\n\"help\": brings up this text.\n\"describe\": gives a description of your environment.\n\"describe [object_name]\": describes the specified object.\n\"inventory\": lists your inventory.\n\"take/pick up/grab [object_name]\": picks up the specified object.\n\"talk to [npc_name]\": starts talking to the npc.\n\"options\": shows the possible dialogue choices during dialogues with NPCs.\nThere are also other commands, which you can find out by guessing. They are mostly simple, so don't try too complicated stuff.");
+		}
+		
+		private function actionTalk(command:String, match:Array):void {
+			var npcName:String;
+			
+			try {
+				npcName = match[5].substr(1, int.MAX_VALUE);
+			} catch (e:*) {
+				npcName = "";
+			}
+			
+			if (command == "talk" || command == "speak") {
+				this.printLine("Bla bla bla.");
+			} else if (npcName == "") {
+				this.printLine("Talk to whom?");
+			} else {
+				var npc:NPC = scene.findNPC(npcName);
+				if (npc != null) {
+					npc.startChat();
+				} else {
+					this.printLine("I can't find it.");
+				}
+			}
+		}
+		
+		private function actionInventory(command:String, match:Array):void {
+			this.character.printInventory();
+		}
+		
+		private function setHelperActions():void {
+			setAction("(grab|pick up|take)(.*)", actionPickup);
+			setAction("(describe|look at)(.*)", actionDescribe);
+			setAction("help$", actionHelp);
+			setAction("inventory$", actionInventory);
+			setAction("(talk|speak)(( (to|with)(.*))|)", actionTalk);
+			setAction("(go to|walk to)(.*)", actionGo);
+		}
+		
 		
 		public function parseCommand(command:String):void {
 			interactionHandler.parse(command);
@@ -65,14 +245,14 @@ package Base
 			Util.remove(items, item);
 		}
 		
-		public function addCharacter(...Characters):void {
+		/*public function addCharacter(...Characters):void {
 			for each(var item:Character in Characters) {
 				characters.push(item);
 			}
 		}
 		public function removeCharacter(character:Character):void {
 			Util.remove(characters, character);
-		}
+		}*/
 		
 		public function addNPC(...Npcs):void {
 			for each(var item:NPC in Npcs) {
@@ -160,7 +340,7 @@ package Base
 		
 		public function init():void {
 			items = new Vector.<Item>();
-			characters = new Vector.<Character>();
+			//characters = new Vector.<Character>();
 			scenes = new Vector.<Scene>();
 			npcs = new Vector.<NPC>();
 			stopAllTimers();
@@ -175,7 +355,8 @@ package Base
 			if (obj is Item) {
 				items.push(obj);
 			} else if (obj is Character) {
-				characters.push(obj);
+				//characters.push(obj);
+				character = obj as Character;
 			} else if (obj is Scene) {
 				scenes.push(obj);
 			} else if (obj is NPC) {
@@ -189,12 +370,34 @@ package Base
 			if (obj is Item) {
 				Util.remove(items, obj);
 			} else if (obj is Character) {
-				Util.remove(characters, obj);
+				//Util.remove(characters, obj);
+				if (character == obj)
+					character = null;
 			} else if (obj is Scene) {
 				Util.remove(scenes, obj);
 			} else if (obj is NPC) {
 				Util.remove(npcs, obj);
 			}
+		}
+		
+		public function get scene():Scene 
+		{
+			return _scene;
+		}
+		
+		public function set scene(value:Scene):void 
+		{
+			_scene = value;
+		}
+		
+		public function get character():Character 
+		{
+			return _character;
+		}
+		
+		public function set character(value:Character):void 
+		{
+			_character = value;
 		}
 		
 	}

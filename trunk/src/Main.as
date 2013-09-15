@@ -35,39 +35,60 @@ package
 			console.addEventListener(NewMessageEvent.NEW_MESSAGE, newMessage);
 			engine.addEventListener(OutputMessageEvent.OUTPUT_MESSAGE, outputMessage);
 			
+			/* create character */
+			var character:Character = new Character();
+			character.addAlias("me", "myself", "Guybrush", "Guybrush Threepwood");
+			character.shortDescription = "I'm in my mid-twenties and I look so good that it is probably the reason why they have locked me up in here; to save the world from getting blind by my awesome look.";
 			
+			/* create scenes */
 			var sceneMainRoom:Scene = new Scene();
 			sceneMainRoom.addAlias("main room", "room");
 			sceneMainRoom.descriptionShort = "I'm in a room.";
 			sceneMainRoom.descriptionLong = "I'm in a room. I don't remember how I ended up here.";
 			
+			sceneMainRoom.onEnter = function(prevScene:Scene = null) {
+				if (telephone.getProp("ringing") == true) {
+					telephone.startTimer();
+				}
+			}
+			sceneMainRoom.onLeave = function(nextScene:Scene = null) {
+				telephone.stopTimer();
+			}
+			
+			var sceneSmallRoom:Scene = new Scene();
+			sceneSmallRoom.addAlias("small room", "room", "little room");
+			sceneSmallRoom.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
+			sceneSmallRoom.descriptionShort = "This is a small room.";
+			sceneSmallRoom.addNeighborScene(sceneMainRoom);
+			sceneMainRoom.addNeighborScene(sceneSmallRoom);
+			
+			var sceneWin:Scene = new Scene();
+			sceneWin.addAlias("garden");
+			sceneWin.descriptionShort = "I'm in a garden full of people.";
+			sceneWin.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
+
+			/* create items */
+			// table //
 			var table:Item = new Item();
 			table.addAlias("table");
 			table.shortDescription = "It's a table.";
 			sceneMainRoom.addItem(table);
 			
+			// pencil //
 			var pencil:Item = new Item();
 			pencil.isPickable = true;
 			pencil.addAlias("a pencil", "a pen");
 			pencil.shortDescription = "It's a pencil. Hmm.";
 			table.addItem(pencil);
 			
-			var note:Item = new Item();
-			note.isPickable = true;
-			note.addAlias("note", "notes", "paper");
-			note.shortDescription = "It's a note. Maybe it has some clues on why I am here and what is going on.";
-			table.addItem(note);
-			
-			sceneMainRoom.setAction1(note, "(use|read)", function() {
-				engine.printLine("Dear Sir,\n\nYou are probably wondering why you are here. Sorry for the inconvenience, but we had to bring you here for a special purpose. Please do not try to run away, for soon you will get to know the reason and the necessity of your presence.\n\nBest,\nAdministration");
-			});
-			
+			// cupboard //
 			var cupboard:Item = new Item();
 			cupboard.addAlias("cupboard");
 			cupboard.shortDescription = "It's a cupboard.";
-			sceneMainRoom.addItem(cupboard);
 			cupboard.setProp("open", false);
-			sceneMainRoom.setAction1(cupboard, "close", function() {
+			sceneMainRoom.addItem(cupboard);
+			
+			engine.setAction1(cupboard, "close", function() {
 				if (cupboard.getProp("open") == false) {
 					engine.printLine("It's already closed.");
 				} else {
@@ -79,7 +100,7 @@ package
 					}
 				}
 			});
-			sceneMainRoom.setAction1(cupboard, "open", function() {
+			engine.setAction1(cupboard, "open", function() {
 				if (cupboard.getProp("open") == true) {
 					engine.printLine("It's already open.");
 				} else {
@@ -93,11 +114,15 @@ package
 				}
 			});
 			
+			// clothes //
 			var clothes:Item = new Item();
 			clothes.isPickable = true;
 			clothes.addAlias("cloth", "clothes");
 			clothes.shortDescription = "They are my clothes! No wonder why I was naked before.";
-			sceneMainRoom.setAction1(clothes, "(use|put on|wear)", function() {
+			clothes.isVisible = false;
+			cupboard.addItem(clothes);
+			
+			engine.setAction1(clothes, "(use|put on|wear)", function() {
 				if (!clothes.isVisible) {
 					engine.printLine("I can't find the object.");
 				}
@@ -107,9 +132,8 @@ package
 					engine.unregister(clothes);
 				}
 			});
-			clothes.isVisible = false;
-			cupboard.addItem(clothes);
 			
+			// door //
 			var door:Item = new Item();
 			door.addAlias("door");
 			door.shortDescription = "It's a door.";
@@ -118,7 +142,7 @@ package
 			door.setProp("locked", true);
 			sceneMainRoom.addItem(door);
 			
-			sceneMainRoom.setAction1(door, "(enter|use)", function() {
+			engine.setAction1(door, "(enter|use)", function() {
 				if (door.getProp("open") == false) {
 					engine.printLine("It's closed.");
 				} 
@@ -129,10 +153,10 @@ package
 				}
 			});
 			
-			sceneMainRoom.setAction1(door, "(unlock)", function() {
+			engine.setAction1(door, "(unlock)", function() {
 				engine.printLine("I can't unlock it with my bare hands. The instructions on the lock says that the door can be unlocked with a pencil. How convenient.");	
 			});
-			sceneMainRoom.setAction1(door, "(open)", function() {
+			engine.setAction1(door, "(open)", function() {
 				if (door.getProp("locked") == true) {
 					engine.printLine("It's locked.");
 				}
@@ -146,7 +170,7 @@ package
 				}
 			});
 			
-			sceneMainRoom.setAction1(door, "(close)", function() {
+			engine.setAction1(door, "(close)", function() {
 				if (door.getProp("open") == true) {
 					door.setProp("open", false);
 					engine.printLine("Closed the door.");
@@ -168,41 +192,31 @@ package
 					engine.printLine("Tadaa! The door is unlocked!");
 					door.additionalDescription = "";
 					
-					var sceneWin:Scene = new Scene();
-					sceneWin.descriptionShort = "I'm in a garden full of people.";
-					sceneWin.descriptionLong = "I'm in a nicely decorated garden. There are many people here, celebrating my arrival, and congratulating me. And I lived happily ever after.";
-					
-					//scene.addNeighborScene(scene2);
-					
-					engine.setState(sceneWin, character, sceneWin);
-					//engine.stopAllTimers(scene);
+					engine.setState(sceneWin);
 				}
 			};
-			sceneMainRoom.setAction2(openDoorFunc, "(unlock|open) $1 with $2", door, pencil);
-			sceneMainRoom.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
-				
-			var sceneSmallRoom:Scene = new Scene();
-			sceneSmallRoom.addAlias("small room", "room", "little room");
-			sceneSmallRoom.descriptionLong = "This is a small room, put here just to show you the scene changing feature of the engine.";
-			sceneSmallRoom.descriptionShort = "This is a small room.";
-			sceneSmallRoom.addNeighborScene(sceneMainRoom);
-			sceneMainRoom.addNeighborScene(sceneSmallRoom);
+			engine.setAction2(openDoorFunc, "(unlock|open) $1 with $2", door, pencil);
+			engine.setAction2(openDoorFunc, "(use) $1 with $2", pencil, door);
 			
-			sceneMainRoom.onEnter = function(prevScene:Scene = null) {
-				if (telephone.getProp("ringing") == true) {
-					telephone.startTimer();
-				}
-			}
-			sceneMainRoom.onLeave = function(nextScene:Scene = null) {
-				telephone.stopTimer();
-			}
+			// note //
+			var note:Item = new Item();
+			note.isPickable = true;
+			note.addAlias("note", "notes", "paper");
+			note.shortDescription = "It's a note. Maybe it has some clues on why I am here and what is going on.";
+			sceneSmallRoom.addItem(note);
 			
+			engine.setAction1(note, "(use|read)", function() {
+				engine.printLine("Dear Sir,\n\nYou are probably wondering why you are here. Sorry for the inconvenience, but we had to bring you here for a special purpose. Please do not try to run away, for soon you will get to know the reason and the necessity of your presence.\n\nBest,\nAdministration");
+			});
+			
+			// telephone //
 			var telephone:Item = new Item();
 			telephone.addAlias("telephone", "phone");
 			telephone.shortDescription = "It's a telephone.";
 			telephone.additionalDescription = "It's ringing.";
 			telephone.setProp("ringing", true);
 			telephone.overridePickup = true;
+			table.addItem(telephone);
 			
 			var d:Dialogue = new Dialogue();
 			var s1:State = new State("Hello my friend. Glad that you finally answered my call.", function() {
@@ -215,8 +229,6 @@ package
 			var s5:State = new State("Okay, see you later.", function() {
 				(d.owner as Item).endChat();
 			});
-			//"Bla bla bla, I get it. You are a robot. That means you are a piece of junk. Nice. Why am I here?"
-			//"Cut the \"you can't leave here\" crap and tell me how I get out of here; I should be a at home by 9 pm., or I'll miss the game. And if I do miss the game, then you better start looking for a place to hide, miss robot, because I will tear you apart and send each of your screws to a different country, have them buried, then taken out, reassembled; and then I will restart from the beginning. You understand?"
 			var a1:Answer = new Answer("Who are you?", s2, function() {
 				a1.isVisible = false;
 			});
@@ -235,32 +247,20 @@ package
 			s4.addAnswer(a1, a2, a3, a4);
 			
 			telephone.setDialogue(d);
-			table.addItem(telephone);
 			
 			telephone.setTimer(7000, function() {
 				engine.printLine("*Brrrrrr! (A phone rings)*");
 			}, 0);
-			//var a2:Answer = new Answer("I'm great, thanks for asking. How do you do?", s1, s3);
-			//var a3:Answer = new Answer("A robot? Wow, you definitely sound more like human. Did NASA or something build you? Anyway, can you tell me why am I here?", 
-			//	s2, s4);
 			
-			
-			sceneMainRoom.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
+			engine.setAction1(telephone, "(pick up|answer|use|take|grab)", function() {
 				telephone.stopTimer();
 				telephone.startChat();
 			});
 			
-			var character:Character = new Character();
-			character.addAlias("me", "myself", "Guybrush", "Guybrush Threepwood");
-			character.shortDescription = "I'm in my mid-twenties and I look so good that it is probably the reason why they have locked me up in here; to save the world from getting blind by my awesome look.";
-			
-			//scene.addCharacter(character);
-			//scene.character = character;
-			
 			
 			engine.printLine("Welcome to the demo game. Type \"help\" to display the help text. Type \"describe\" to begin playing by describing your environment.");
 			engine.printLine(SEPARATOR);
-			engine.setState(sceneMainRoom, character, sceneMainRoom);
+			engine.setState(sceneMainRoom, character);
 		}
 		
 		public function newMessage(e:NewMessageEvent):void {
