@@ -83,7 +83,7 @@ package Base
 				}
 			}
 			if (!flag) {
-				engine.printLine("I can't do that.");
+				(this is Engine) ? (this as Engine).printLine("I can't do that.") : engine.printLine("I can't do that.");
 				trace("ERROR: ActionHandler: parse");
 			}
 		}
