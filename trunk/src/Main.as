@@ -14,10 +14,7 @@ package
 	import flash.utils.Timer;
 	import Visual.Console;
 	import Visual.NewMessageEvent;
-	/**
-	 * ...
-	 * @author 
-	 */
+	
 	public class Main extends Sprite
 	{
 		var console:Console;
@@ -37,7 +34,7 @@ package
 			
 			/* create character */
 			var character:Character = new Character();
-			character.addAlias("me", "myself", "Guybrush", "Guybrush Threepwood");
+			character.addAlias("Guybrush", "Guybrush Threepwood");
 			character.shortDescription = "I'm in my mid-twenties and I look so good that it is probably the reason why they have locked me up in here; to save the world from getting blind by my awesome look.";
 			
 			/* create scenes */
@@ -258,7 +255,7 @@ package
 			});
 			
 			
-			engine.printLine("Welcome to the demo game. Type \"help\" to display the help text. Type \"describe\" to begin playing by describing your environment.");
+			engine.printLine("Welcome to the demo game. Type \"help\" to display the help text.");
 			engine.printLine(SEPARATOR);
 			engine.setState(sceneMainRoom, character);
 		}

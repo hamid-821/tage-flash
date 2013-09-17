@@ -15,6 +15,7 @@ package Base.Object
 			
 			isPickable = false;
 			inventory = new Vector.<Item>();
+			addAlias("me", "myself");
 		}
 		
 		/*override public function init():void {
