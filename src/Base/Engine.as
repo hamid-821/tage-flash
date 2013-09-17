@@ -12,6 +12,8 @@ package Base
 	 */
 	public class Engine extends ActionHandler
 	{
+		public static var SEPARATOR:String = "---------------------------------------------------------------------";
+		
 		public static var inst:Engine;
 		
 		public var items:Vector.<Item>;
@@ -145,6 +147,14 @@ package Base
 			}
 		}
 		
+		private function actionDescribeEnvironment(command:String, match:Array) {
+			if (!scene.firstTime) {
+					scene.firstTime = true;
+					describe(true);
+				} else {
+					describe(false);
+				}
+		}
 		private function actionDescribe(command:String, match:Array) {
 			if (match[2] == "") {
 				if (!scene.firstTime) {
@@ -164,7 +174,10 @@ package Base
 					obj = obj2;
 					if (obj == null) {
 						obj = obj3;
-					}
+						if (!obj3.hasAlias(objname)) {
+							obj = null;
+						}
+					} 
 				}
 				if (obj == null) {
 					this.printLine("I can't find that.");
@@ -192,9 +205,10 @@ package Base
 		}
 		
 		private function actionHelp(command:String, match:Array):void {
-			this.printLine("commands:\n\"help\": brings up this text.\n\"describe\": gives a description of your environment.\n\"describe [object_name]\": describes the specified object.\n\"inventory\": lists your inventory.\n\"take/pick up/grab [object_name]\": picks up the specified object.\n\"talk to [npc_name]\": starts talking to the npc.\n\"options\": shows the possible dialogue choices during dialogues with NPCs.\nThere are also other commands, which you can find out by guessing. They are mostly simple, so don't try too complicated stuff.");
+			this.printLine(SEPARATOR);
+			this.printLine("COMMANDS:\nhelp: brings up this text.\ndescribe/look: gives a description of your environment.\ndescribe/look at [object_name]: describes the specified object.\ninventory: lists your inventory.\ntake/pick up/grab [object_name]: picks up the specified object.\ntalk to [npc_name]: starts talking to the npc.\n\nThere are also other commands, which you can find out by guessing. They are mostly simple, so don't try too complicated stuff.");
+			this.printLine(SEPARATOR);
 		}
-		
 		private function actionTalk(command:String, match:Array):void {
 			var npcName:String;
 			
@@ -224,7 +238,8 @@ package Base
 		
 		private function setHelperActions():void {
 			setAction("(grab|pick up|take)(.*)", actionPickup);
-			setAction("(describe|look at)(.*)", actionDescribe);
+			setAction("(describe|look at)(.+)", actionDescribe);
+			setAction("(describe|look)$", actionDescribeEnvironment);
 			setAction("help$", actionHelp);
 			setAction("inventory$", actionInventory);
 			setAction("(talk|speak)(( (to|with)(.*))|)", actionTalk);
